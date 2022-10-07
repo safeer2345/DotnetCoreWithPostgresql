@@ -1,0 +1,49 @@
+﻿version: "3.9"
+services:
+    app:
+        image: subscription-api:latest
+        build: ../
+        ports:
+            - "5000:80"
+        environment:
+            - DB_CONNECTION_STRING="host=postgres;port=5432;database=subscription;username=root;password=root"
+            - ASPNETCORE_URLS=http://+:80
+            - ASPNETCORE_ENVIRONMENT=Development
+
+        depends_on:
+            - postgres
+        networks:
+            - subscription-dev
+
+    postgres:
+        image: postgres
+        environment:
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=root
+            - POSTGRES_DB=subscription
+        restart: always
+        ports: 
+            - 5432:5432
+        volumes:
+            - db_volume:/var/lib/postgresql/data
+            - ./db/script.sql:/docker-entrypoint-initdb.d/scrtpt.sql
+        networks:
+            - subscription-dev
+
+    pgadmin:
+        image: dpage/pgadmin4
+        environment: 
+            - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+            - PGADMIN_DEFAULT_PASSWORD=root
+        restart: always
+        ports: 
+            - "5050:80"
+        depends_on:
+            - postgres
+        networks:
+            - subscription-dev
+networks:
+  subscription-dev:
+
+volumes:
+  db_volume:
